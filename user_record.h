@@ -1,6 +1,6 @@
 #pragma once
 
-#include "SQLClient.h"
+#include "sql_client.h"
 #include <string>
 
 class UserRecord {
