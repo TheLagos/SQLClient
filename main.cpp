@@ -1,30 +1,35 @@
+#define NOMINMAX
+
 #include <iostream>
 #include <iomanip>
 #include <string>
 #include <stdexcept>
+#include <limits>
+#include <algorithm>
 #include <mysql.h>
 
 class SQLClient {
 private:
 	const std::string host;
+	const int port;
 	const std::string user;
 	const std::string password;
 	const std::string database;
 	MYSQL* connect;
 public:
-	SQLClient(std::string _host, std::string _user, std::string _password, std::string _database)
-	: host(_host), user(_user), password(_password), database(_database), connect(nullptr) {
+	SQLClient(std::string _host, int _port, std::string _user, std::string _password, std::string _database)
+	: host(_host), port(_port), user(_user), password(_password), database(_database), connect(nullptr) {
 		connect = mysql_init(NULL);
 		if (connect == NULL) {
-			throw std::runtime_error("Could not initialize database! \n");
+			throw std::runtime_error("Could not initialize database! \n\n");
 		}
 
-		if (mysql_real_connect(connect, host.c_str(), user.c_str(), password.c_str(), database.c_str(), 3306, NULL, 0) == NULL) {
+		if (mysql_real_connect(connect, host.c_str(), user.c_str(), password.c_str(), database.c_str(), port, NULL, 0) == NULL) {
 			std::string error = mysql_error(connect);
 			mysql_close(connect);
-			throw std::runtime_error("Could not connect to database: " + error + "! \n");
+			throw std::runtime_error("Could not connect to database: " + error + "! \n\n");
 		}
-		std::cout << "Successfully connected to '" << database << "'! \n";
+		std::cout << "Successfully connected to '" << database << "'! \n\n";
 	}
 
 	void print_result(MYSQL_RES* result) {
@@ -32,7 +37,7 @@ public:
 		MYSQL_FIELD* fields = mysql_fetch_fields(result);
 		const int width = 20;
 
-		std::cout << "\n";
+
 		for (unsigned int i = 0; i < num_fields; ++i) {
 			std::cout << std::left << std::setw(width) << fields[i].name << "|";
 		}
@@ -51,12 +56,12 @@ public:
 			}
 			std::cout << "\n";
 		}
-		std::cout << "\n";
+		std::cout << "\n\n";
 	}
 
 	void do_query(const std::string& command) {
 		if (mysql_query(connect, command.c_str()) != 0) {
-			std::cout << "Query error: " << mysql_error(connect) << '! \n';
+			std::cout << "Query error: " << mysql_error(connect) << "!\n\n";
 			return;
 		}
 
@@ -67,10 +72,10 @@ public:
 		}
 		else {
 			if (mysql_field_count(connect) == 0) {
-				std::cout << "Query successfull, " << mysql_affected_rows(connect) << " rows affected! \n";
+				std::cout << "Query successfull, " << mysql_affected_rows(connect) << " rows affected! \n\n";
 			}
 			else {
-				std::cout << "Retrieval error: " << mysql_error(connect) << '! \n';
+				std::cout << "Retrieval error: " << mysql_error(connect) << "!\n\n";
 			}
 		}
 		
@@ -85,17 +90,43 @@ public:
 	}
 };
 
+std::string to_lower(std::string str) {
+	std::transform(str.begin(), str.end(), str.begin(), [](unsigned char c) {
+		return std::tolower(c);
+	});
+	return str;
+}
+
 int main() {
 	try {
-		SQLClient c("localhost", "root", "root", "dbagency");
+		std::string db_type;
+		int port = 0;
+
+		while (port == 0) {
+			std::cout << "Choose database: local or docker >> ";
+			std::cin >> db_type;
+			std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+
+			if (to_lower(db_type) == "local") {
+				port = 3306;
+			}
+			else if (to_lower(db_type) == "docker") {
+				port = 3307;
+			}
+			else {
+				std::cout << "Incorrect input, choose correct type!" << "\n\n";
+			}
+		}
+
+		SQLClient c("localhost", port, "root", "root", "lab9_db");
 		std::string command = "";
 
-		std::cout << "Enter SQL command (or 'EXIT' to quit): \n> ";
+		std::cout << "Enter SQL command (or 'EXIT' to quit): \n\n>> ";
 
-		while (command != "EXIT") {
+		while (to_lower(command) != "exit") {
 			std::getline(std::cin, command);
 
-			if (command == "EXIT") {
+			if (to_lower(command) == "exit") {
 				break;
 			}
 
@@ -103,7 +134,7 @@ int main() {
 				continue;
 			}
 			c.do_query(command);
-			std::cout << "> ";
+			std::cout << ">> ";
 		}
 	}
 	catch (const std::runtime_error& error) {
