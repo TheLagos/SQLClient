@@ -1,8 +1,11 @@
 #define NOMINMAX
 
+#include "sql_client.h"
+#include "user_dao.h"
+#include "user_record.h"
+
 #include <limits>
 #include <algorithm>
-#include "sql_client.h"
 
 std::string to_lower(std::string str) {
 	std::transform(str.begin(), str.end(), str.begin(), [](unsigned char c) {
