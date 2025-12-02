@@ -25,7 +25,7 @@ else()
     message(STATUS "Знайдено MySQL library: ${MYSQL_LIBRARY}")
 endif()
 
-add_executable(my_program main.cpp)
+add_executable(my_program main.cpp "sql_client.h" "sql_client.cpp")
 
 target_include_directories(my_program
     PRIVATE
