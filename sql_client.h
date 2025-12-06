@@ -19,5 +19,5 @@ public:
 	~SQLClient();
 
 	void print_result(MYSQL_RES* result);
-	void do_query(const std::string& command);
+	MYSQL_RES* do_query(const std::string& command);
 };

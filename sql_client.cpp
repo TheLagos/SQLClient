@@ -42,27 +42,14 @@ void SQLClient::print_result(MYSQL_RES* result) {
 	std::cout << "\n\n";
 }
 
-void SQLClient::do_query(const std::string& command) {
+MYSQL_RES* SQLClient::do_query(const std::string& command) {
 	if (mysql_query(connect, command.c_str()) != 0) {
 		std::cout << "Query error: " << mysql_error(connect) << "!\n\n";
-		return;
+		return nullptr;
 	}
 
 	MYSQL_RES* result = mysql_store_result(connect);
-
-	if (result != NULL) {
-		print_result(result);
-	}
-	else {
-		if (mysql_field_count(connect) == 0) {
-			std::cout << "Query successfull, " << mysql_affected_rows(connect) << " rows affected! \n\n";
-		}
-		else {
-			std::cout << "Retrieval error: " << mysql_error(connect) << "!\n\n";
-		}
-	}
-
-	mysql_free_result(result);
+	return result;
 }
 
 SQLClient::~SQLClient() {

@@ -18,6 +18,12 @@ public:
     void setName(std::string n);
     void setEmail(std::string e);
     void setAge(int a);
+    void setId(int i);
+
+    int getId() const { return id; }
+    std::string getName() const { return name; }
+    std::string getEmail() const { return email; }
+    int getAge() const { return age; }
 
     void save();
     void remove();

@@ -3,8 +3,8 @@
 #include <string>
 
 struct User {
-	int id;
+	int id = -1;
 	std::string name;
 	std::string email;
-	int age;
+	int age = 0;
 };
